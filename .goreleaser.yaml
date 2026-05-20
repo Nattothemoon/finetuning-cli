@@ -1,0 +1,83 @@
+version: 2
+
+project_name: ft
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: ft
+    main: ./cmd/ft
+    binary: ft
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.ShortCommit}}
+      - -X main.date={{.CommitDate}}
+    goos: [darwin, linux, windows]
+    goarch: [amd64, arm64]
+    # Drop combos the API users won't realistically need.
+    ignore:
+      - goos: windows
+        goarch: arm64
+
+archives:
+  - id: ft
+    name_template: "ft_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^chore:"
+      - "^test:"
+
+release:
+  draft: false
+  prerelease: auto
+  github:
+    owner: Nattothemoon
+    name: finetuning-cli
+  header: |
+    ## ft {{ .Version }}
+
+    Install:
+    ```bash
+    # macOS / Linux
+    curl -fsSL https://raw.githubusercontent.com/Nattothemoon/finetuning-cli/main/scripts/install.sh | bash
+
+    # Windows (PowerShell)
+    iwr -useb https://raw.githubusercontent.com/Nattothemoon/finetuning-cli/main/scripts/install.ps1 | iex
+
+    # Or directly with Go (once the repo moves to the finetuning org)
+    go install github.com/finetuning/cli/cmd/ft@latest
+    ```
+
+# Future: Homebrew tap. Uncomment + provision the tap repo first.
+# brews:
+#   - name: ft
+#     repository:
+#       owner: Nattothemoon
+#       name: homebrew-tap
+#     homepage: "https://finetuning.ai"
+#     description: "Finetuning AI music generation from the command line."
+#     license: "MIT"
+#     install: |
+#       bin.install "ft"

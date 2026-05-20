@@ -1,0 +1,13 @@
+/dist/
+/bin/
+*.exe
+*.test
+*.out
+.DS_Store
+
+# Local env / secrets — keep `.env.example` committed, never `.env` itself.
+.env
+.env.local
+.env.*.local
+.envrc
+.finetuning-test-home/
