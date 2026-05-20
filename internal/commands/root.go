@@ -111,6 +111,7 @@ func NewRootCmd() *cobra.Command {
 		newGetCmd(),
 		newDownloadCmd(),
 		newDoctorCmd(),
+		newUpdateCmd(),
 	)
 	return cmd
 }

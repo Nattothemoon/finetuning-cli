@@ -21,7 +21,7 @@ func GenerationTable(w io.Writer, gens []api.Generation) {
 			duration = formatSeconds(g.Duration)
 		}
 		t.AppendRow(table.Row{
-			ShortID(g.ID),
+			g.ID,
 			string(g.Status),
 			duration,
 			truncate(g.Prompt, 40),

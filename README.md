@@ -127,6 +127,7 @@ ft me
 | `ft get <id>` | Show one generation's detail |
 | `ft download <id>` | Download a completed track |
 | `ft doctor` | Health check + config dump |
+| `ft update` | Re-run the install script to upgrade to the latest release |
 
 Global flags: `--api-key`, `--base-url`, `--config`, `--verbose / -v`, `--no-color`.
 
