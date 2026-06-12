@@ -107,7 +107,8 @@ ft list --json | jq '.data.generations[].id'
 
 ```bash
 ft playlists                                  # list your playlists
-ft playlist add "Focus Beats" <track-id>...   # add tracks (name or pl_ id)
+ft playlist show "Focus Beats"                # one playlist with its tracks
+ft playlist add "Focus Beats" <track-id>...   # add tracks (name or id)
 ft playlist remove pl_123 <track-id>...       # remove tracks (they stay in the library)
 ft playlist move pl_123 pl_456 <track-id>...  # move tracks between playlists
 ```
@@ -128,6 +129,11 @@ ft list --status completed --limit 50 --json \
 ft list --status failed --json \
   | jq -r '.data.generations[].id' \
   | xargs ft delete --yes
+
+# Move everything from one playlist to another
+ft playlist show "Drafts" --json \
+  | jq -r '.data.tracks[].id' \
+  | xargs ft playlist move "Drafts" "Album"
 ```
 
 > Public playlists may only contain public tracks (and private playlists only your own tracks). The API can't change a track's visibility — make it public at [finetuning.ai](https://finetuning.ai) first.
@@ -165,6 +171,7 @@ ft me
 | `ft download <id>` | Download a completed track |
 | `ft delete <id>...` | Permanently delete tracks (confirms unless `--yes`) |
 | `ft playlists` | List your playlists |
+| `ft playlist show <playlist>` | Show a playlist and the tracks in it |
 | `ft playlist add <playlist> <id>...` | Add tracks to a playlist |
 | `ft playlist remove <playlist> <id>...` | Remove tracks from a playlist |
 | `ft playlist move <src> <dst> <id>...` | Move tracks between playlists |

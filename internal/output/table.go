@@ -89,6 +89,32 @@ func PlaylistTable(w io.Writer, pls []api.Playlist) {
 	t.Render()
 }
 
+// PlaylistDetailBlock renders one playlist's header; the caller follows up
+// with GenerationTable for the tracks.
+func PlaylistDetailBlock(w io.Writer, p *api.PlaylistDetail) {
+	t := newPlainTable(w)
+	add := func(k, v string) { t.AppendRow(table.Row{k, v}) }
+	add("ID", p.ID)
+	add("Name", p.Name)
+	if p.Description != "" {
+		add("Description", p.Description)
+	}
+	visibility := "private"
+	if p.IsPublic {
+		visibility = "public"
+	}
+	add("Visibility", visibility)
+	add("Tracks", fmt.Sprintf("%d", p.TrackCount))
+	if p.TotalDuration > 0 {
+		add("Duration", formatSeconds(p.TotalDuration))
+	}
+	if !p.IsOwner {
+		add("Owner", "someone else (public playlist)")
+	}
+	add("Updated", HumanTime(p.UpdatedAt))
+	t.Render()
+}
+
 // MeBlock renders /v1/me into a friendly summary on w.
 func MeBlock(w io.Writer, me *api.Me) {
 	t := newPlainTable(w)

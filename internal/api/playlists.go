@@ -62,6 +62,23 @@ type MoveTracksResult struct {
 	Errors []ItemError `json:"errors,omitempty"`
 }
 
+// PlaylistDetail is the response of GET /v1/playlists/:id — a playlist plus
+// every track in it. Works on own playlists and other users' public ones.
+type PlaylistDetail struct {
+	Playlist
+	IsOwner bool         `json:"isOwner"`
+	Tracks  []Generation `json:"tracks"`
+}
+
+// GetPlaylist → GET /v1/playlists/:id.
+func (c *Client) GetPlaylist(ctx context.Context, id string) (*PlaylistDetail, error) {
+	var out envelope[PlaylistDetail]
+	if err := c.do(ctx, http.MethodGet, "/v1/playlists/"+url.PathEscape(id), nil, &out); err != nil {
+		return nil, err
+	}
+	return &out.Data, nil
+}
+
 // ListPlaylists → GET /v1/playlists. Returns all of the caller's playlists.
 func (c *Client) ListPlaylists(ctx context.Context) ([]Playlist, error) {
 	var out envelope[struct {

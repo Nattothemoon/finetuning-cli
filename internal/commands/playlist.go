@@ -45,10 +45,46 @@ func newPlaylistCmd() *cobra.Command {
 		Short: "Manage playlist tracks (add, remove, move)",
 	}
 	cmd.AddCommand(
+		newPlaylistShowCmd(),
 		newPlaylistAddCmd(),
 		newPlaylistRemoveCmd(),
 		newPlaylistMoveCmd(),
 	)
+	return cmd
+}
+
+func newPlaylistShowCmd() *cobra.Command {
+	var jsonOut bool
+	cmd := &cobra.Command{
+		Use:   "show <playlist>",
+		Short: "Show a playlist and the tracks in it",
+		Long:  "Shows one playlist with every track in it. <playlist> is an id or a playlist name. Works on your own playlists and other users' public playlists (by id).",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			c := getClient(cmd)
+			if err := requireKey(c); err != nil {
+				return err
+			}
+			playlistID, err := resolvePlaylist(cmd, args[0])
+			if err != nil {
+				return err
+			}
+			pl, err := c.GetPlaylist(cmd.Context(), playlistID)
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				return output.RawJSON(os.Stdout, pl)
+			}
+			output.PlaylistDetailBlock(os.Stdout, pl)
+			if len(pl.Tracks) > 0 {
+				fmt.Println()
+				output.GenerationTable(os.Stdout, pl.Tracks)
+			}
+			return nil
+		},
+	}
+	cmd.Flags().BoolVar(&jsonOut, "json", false, "emit raw JSON to stdout")
 	return cmd
 }
 
