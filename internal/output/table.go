@@ -63,6 +63,32 @@ func GenerationDetail(w io.Writer, g *api.Generation) {
 	t.Render()
 }
 
+// PlaylistTable renders the caller's playlists as a compact table.
+func PlaylistTable(w io.Writer, pls []api.Playlist) {
+	t := newPlainTable(w)
+	t.Style().Format.Header = text.FormatUpper
+	t.AppendHeader(table.Row{"ID", "NAME", "TRACKS", "DURATION", "VISIBILITY", "UPDATED"})
+	for _, p := range pls {
+		duration := "—"
+		if p.TotalDuration > 0 {
+			duration = formatSeconds(p.TotalDuration)
+		}
+		visibility := "private"
+		if p.IsPublic {
+			visibility = "public"
+		}
+		t.AppendRow(table.Row{
+			p.ID,
+			truncate(p.Name, 30),
+			p.TrackCount,
+			duration,
+			visibility,
+			HumanTime(p.UpdatedAt),
+		})
+	}
+	t.Render()
+}
+
 // MeBlock renders /v1/me into a friendly summary on w.
 func MeBlock(w io.Writer, me *api.Me) {
 	t := newPlainTable(w)

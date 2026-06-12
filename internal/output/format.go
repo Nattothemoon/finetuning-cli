@@ -28,6 +28,12 @@ func StdoutIsTTY() bool {
 	return term.IsTerminal(int(os.Stdout.Fd()))
 }
 
+// StdinIsTTY returns true if stdin is attached to a terminal — used to decide
+// whether an interactive confirmation prompt is possible.
+func StdinIsTTY() bool {
+	return term.IsTerminal(int(os.Stdin.Fd()))
+}
+
 // JSON writes `v` as pretty JSON to w (stdout by default).
 func JSON(w io.Writer, v any) error {
 	enc := json.NewEncoder(w)

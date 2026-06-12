@@ -8,12 +8,15 @@ import (
 
 // APIError is the structured error returned by pub.finetuning.ai.
 type APIError struct {
-	HTTPStatus int                    `json:"-"`
-	Code       string                 `json:"code"`
-	Message    string                 `json:"message"`
-	Details    map[string]any         `json:"details,omitempty"`
-	RetryAfter int                    `json:"retryAfter,omitempty"`
-	Raw        map[string]any         `json:"-"`
+	HTTPStatus int            `json:"-"`
+	Code       string         `json:"code"`
+	Message    string         `json:"message"`
+	Details    map[string]any `json:"details,omitempty"`
+	// DetailItems is populated instead of Details when the server sends
+	// `details` as an array of per-item errors (ADD_FAILED / MOVE_FAILED).
+	DetailItems []ItemError    `json:"-"`
+	RetryAfter  int            `json:"retryAfter,omitempty"`
+	Raw         map[string]any `json:"-"`
 }
 
 func (e *APIError) Error() string {
@@ -38,18 +41,24 @@ func (e *APIError) FieldDetail() string {
 func parseAPIError(status int, body []byte, retryAfterHeader string) error {
 	var envelope struct {
 		Error struct {
-			Code       string         `json:"code"`
-			Message    string         `json:"message"`
-			Details    map[string]any `json:"details"`
-			RetryAfter int            `json:"retryAfter"`
+			Code       string          `json:"code"`
+			Message    string          `json:"message"`
+			Details    json.RawMessage `json:"details"`
+			RetryAfter int             `json:"retryAfter"`
 		} `json:"error"`
 	}
 	err := &APIError{HTTPStatus: status}
 	if jsonErr := json.Unmarshal(body, &envelope); jsonErr == nil && envelope.Error.Code != "" {
 		err.Code = envelope.Error.Code
 		err.Message = envelope.Error.Message
-		err.Details = envelope.Error.Details
 		err.RetryAfter = envelope.Error.RetryAfter
+		// `details` is an object on most routes, but an array of per-item
+		// errors on the bulk all-failed responses. Try both shapes.
+		if len(envelope.Error.Details) > 0 {
+			if json.Unmarshal(envelope.Error.Details, &err.Details) != nil {
+				_ = json.Unmarshal(envelope.Error.Details, &err.DetailItems)
+			}
+		}
 	} else {
 		err.Code = fmt.Sprintf("HTTP_%d", status)
 		err.Message = string(body)

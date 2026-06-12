@@ -103,6 +103,43 @@ ft list --status completed
 ft list --json | jq '.data.generations[].id'
 ```
 
+### Playlists
+
+```bash
+ft playlists                                  # list your playlists
+ft playlist add "Focus Beats" <track-id>...   # add tracks (name or pl_ id)
+ft playlist remove pl_123 <track-id>...       # remove tracks (they stay in the library)
+ft playlist move pl_123 pl_456 <track-id>...  # move tracks between playlists
+```
+
+Playlists can be referenced by id (`pl_...`) or by name (case-insensitive exact match; ambiguous names error and list the candidate ids). Playlists are created in the web app — the API only manages their tracks.
+
+Bulk operations are partial-success: failures print as per-track warnings on stderr, and the command exits non-zero only if *nothing* succeeded. The CLI chunks at 100 ids per request automatically.
+
+They compose with `ft list --json` for bulk selections:
+
+```bash
+# Add your recent completed tracks to a playlist
+ft list --status completed --limit 50 --json \
+  | jq -r '.data.generations[].id' \
+  | xargs ft playlist add "Focus Beats"
+
+# Clean up every failed generation (--yes: pipes can't answer the prompt)
+ft list --status failed --json \
+  | jq -r '.data.generations[].id' \
+  | xargs ft delete --yes
+```
+
+> Public playlists may only contain public tracks (and private playlists only your own tracks). The API can't change a track's visibility — make it public at [finetuning.ai](https://finetuning.ai) first.
+
+### Delete tracks
+
+```bash
+ft delete <track-id>... [--yes]
+```
+
+**Permanent** — the track disappears from your library, playlists, and public pages, and cannot be restored. Prompts for confirmation unless `--yes` is passed (required in scripts / non-TTY).
+
 ### Account info
 
 ```bash
@@ -126,6 +163,11 @@ ft me
 | `ft list` | Show recent generations |
 | `ft get <id>` | Show one generation's detail |
 | `ft download <id>` | Download a completed track |
+| `ft delete <id>...` | Permanently delete tracks (confirms unless `--yes`) |
+| `ft playlists` | List your playlists |
+| `ft playlist add <playlist> <id>...` | Add tracks to a playlist |
+| `ft playlist remove <playlist> <id>...` | Remove tracks from a playlist |
+| `ft playlist move <src> <dst> <id>...` | Move tracks between playlists |
 | `ft doctor` | Health check + config dump |
 | `ft update` | Re-run the install script to upgrade to the latest release |
 

@@ -110,6 +110,9 @@ func NewRootCmd() *cobra.Command {
 		newListCmd(),
 		newGetCmd(),
 		newDownloadCmd(),
+		newDeleteCmd(),
+		newPlaylistsCmd(),
+		newPlaylistCmd(),
 		newDoctorCmd(),
 		newUpdateCmd(),
 	)
