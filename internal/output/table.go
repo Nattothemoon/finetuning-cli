@@ -37,6 +37,9 @@ func GenerationDetail(w io.Writer, g *api.Generation) {
 	add := func(k, v string) { t.AppendRow(table.Row{k, v}) }
 	add("ID", g.ID)
 	add("Status", string(g.Status))
+	if g.Type != "" && g.Type != "music" {
+		add("Type", g.Type)
+	}
 	if g.Title != "" {
 		add("Title", g.Title)
 	}
@@ -59,6 +62,49 @@ func GenerationDetail(w io.Writer, g *api.Generation) {
 	add("Created", HumanTime(g.CreatedAt))
 	if g.CompletedAt != "" {
 		add("Completed", HumanTime(g.CompletedAt))
+	}
+	t.Render()
+}
+
+// SoundEffectTable renders a list of sound effects as a compact table.
+func SoundEffectTable(w io.Writer, sfx []api.SoundEffect) {
+	t := newPlainTable(w)
+	t.Style().Format.Header = text.FormatUpper
+	t.AppendHeader(table.Row{"ID", "STATUS", "DURATION", "PROMPT", "CREATED"})
+	for _, s := range sfx {
+		t.AppendRow(table.Row{
+			s.ID,
+			string(s.Status),
+			formatFloatSeconds(s.Duration),
+			truncate(s.Prompt, 40),
+			HumanTime(s.CreatedAt),
+		})
+	}
+	t.Render()
+}
+
+// SoundEffectDetail renders a single sound effect as a labelled block.
+func SoundEffectDetail(w io.Writer, s *api.SoundEffect) {
+	t := newPlainTable(w)
+	add := func(k, v string) { t.AppendRow(table.Row{k, v}) }
+	add("ID", s.ID)
+	add("Status", string(s.Status))
+	add("Prompt", s.Prompt)
+	if s.RequestedDuration > 0 {
+		add("Requested", formatFloatSeconds(s.RequestedDuration))
+	}
+	if s.Duration > 0 {
+		add("Duration", formatFloatSeconds(s.Duration))
+	}
+	if s.AudioURL != "" {
+		add("Audio URL", s.AudioURL)
+	}
+	if s.ErrorMessage != "" {
+		add("Error", s.ErrorMessage)
+	}
+	add("Created", HumanTime(s.CreatedAt))
+	if s.CompletedAt != "" {
+		add("Completed", HumanTime(s.CompletedAt))
 	}
 	t.Render()
 }
@@ -162,4 +208,16 @@ func formatSeconds(s int) string {
 		return fmt.Sprintf("%dm", m)
 	}
 	return fmt.Sprintf("%dm %ds", m, r)
+}
+
+// formatFloatSeconds renders a fractional duration (sound effects are 1–8s,
+// often with a half-second, e.g. "5.5s"). Whole values drop the decimal.
+func formatFloatSeconds(s float64) string {
+	if s <= 0 {
+		return "—"
+	}
+	if s == float64(int(s)) {
+		return fmt.Sprintf("%ds", int(s))
+	}
+	return fmt.Sprintf("%.1fs", s)
 }

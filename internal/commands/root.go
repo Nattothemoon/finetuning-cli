@@ -107,6 +107,8 @@ func NewRootCmd() *cobra.Command {
 		newAuthCmd(),
 		newMeCmd(),
 		newGenerateCmd(),
+		newInstrumentalCmd(),
+		newSfxCmd(),
 		newListCmd(),
 		newGetCmd(),
 		newDownloadCmd(),

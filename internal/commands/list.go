@@ -11,10 +11,11 @@ import (
 
 func newListCmd() *cobra.Command {
 	var (
-		limit   int
-		offset  int
-		status  string
-		jsonOut bool
+		limit    int
+		offset   int
+		status   string
+		typeKind string
+		jsonOut  bool
 	)
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -27,7 +28,10 @@ func newListCmd() *cobra.Command {
 			if limit < 1 || limit > 99 {
 				return fmt.Errorf("--limit must be between 1 and 99 (got %d)", limit)
 			}
-			opts := api.ListOptions{Limit: limit, Offset: offset}
+			if typeKind != "" && typeKind != "music" && typeKind != "instrumental" {
+				return fmt.Errorf("--type must be music or instrumental (got %q)", typeKind)
+			}
+			opts := api.ListOptions{Limit: limit, Offset: offset, Type: typeKind}
 			if status != "" {
 				opts.Status = api.GenerationStatus(status)
 			}
@@ -53,6 +57,7 @@ func newListCmd() *cobra.Command {
 	f.IntVar(&limit, "limit", 20, "rows per page (1-99)")
 	f.IntVar(&offset, "offset", 0, "pagination offset")
 	f.StringVar(&status, "status", "", "filter by status: pending|processing|completed|failed")
+	f.StringVar(&typeKind, "type", "", "filter by type: music|instrumental")
 	f.BoolVar(&jsonOut, "json", false, "emit raw JSON to stdout")
 	return cmd
 }

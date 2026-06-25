@@ -39,6 +39,7 @@ type Generation struct {
 	ID               string           `json:"id"`
 	Title            string           `json:"title"`
 	Prompt           string           `json:"prompt"`
+	Type             string           `json:"type,omitempty"` // "music" | "instrumental"
 	Status           GenerationStatus `json:"status"`
 	AudioURL         string           `json:"audioUrl"`
 	Duration         int              `json:"duration"`
@@ -68,6 +69,7 @@ type ListOptions struct {
 	Limit  int
 	Offset int
 	Status GenerationStatus
+	Type   string // "music" | "instrumental" — empty means all
 }
 
 // CreateGeneration → POST /v1/generations.
@@ -90,6 +92,9 @@ func (c *Client) ListGenerations(ctx context.Context, opts ListOptions) (*ListRe
 	}
 	if opts.Status != "" {
 		q.Set("status", string(opts.Status))
+	}
+	if opts.Type != "" {
+		q.Set("type", opts.Type)
 	}
 	path := "/v1/generations"
 	if encoded := q.Encode(); encoded != "" {

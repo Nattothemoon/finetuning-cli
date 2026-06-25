@@ -166,7 +166,12 @@ ft me
 | `ft auth whoami` | Show signed-in account |
 | `ft me` | Alias of `auth whoami` |
 | `ft generate <tags>` | Submit, poll, download (the orchestrator) |
-| `ft list` | Show recent generations |
+| `ft instrumental <prompt>` | Create an instrumental (vocals-free) track; poll + download |
+| `ft sfx generate <prompt>` | Create a sound effect; poll + download |
+| `ft sfx list` | Show recent sound effects |
+| `ft sfx get <id>` | Show one sound effect's detail |
+| `ft sfx download <id>` | Download a completed sound effect |
+| `ft list` | Show recent generations (`--type music\|instrumental` to filter) |
 | `ft get <id>` | Show one generation's detail |
 | `ft download <id>` | Download a completed track |
 | `ft delete <id>...` | Permanently delete tracks (confirms unless `--yes`) |
